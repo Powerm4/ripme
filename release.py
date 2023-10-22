@@ -29,7 +29,7 @@ except NameError:
 # Make sure the file the user selected is a jar
 def isJar(filename):
     if debug:
-        print("Checking if {} is a jar file".format(filename))
+        print(f"Checking if {filename} is a jar file")
     return filename.endswith("jar")
 
 
@@ -37,7 +37,7 @@ def isJar(filename):
 # false if not
 def isValidCommitMessage(message):
     if debug:
-        print(r"Checking if {} matches pattern ^\d+\.\d+\.\d+:".format(message))
+        print(f"Checking if {message} matches pattern ^\d+\.\d+\.\d+:")
     pattern = re.compile(r"^\d+\.\d+\.\d+:")
     return re.match(pattern, message)
 
@@ -64,21 +64,23 @@ repoOwner = "ripmeapp"
 repoName = "ripme"
 
 if not os.path.isfile(fileToUploadPath):
-    print("[!] Error: {} does not exist".format(fileToUploadPath))
+    print(f"[!] Error: {fileToUploadPath} does not exist")
     sys.exit(1)
 
 if not isJar(fileToUploadPath):
-    print("[!] Error: {} is not a jar file!".format(fileToUploadPath))
+    print(f"[!] Error: {fileToUploadPath} is not a jar file!")
     sys.exit(1)
 
 if not isValidCommitMessage(commitMessage):
-    print("[!] Error: {} is not a valid commit message as it does not start with a version".format(fileToUploadPath))
+    print(
+        f"[!] Error: {fileToUploadPath} is not a valid commit message as it does not start with a version"
+    )
     sys.exit(1)
 
 
 if not args.skip_hash_check:
     if debug:
-        print("Reading file {}".format(fileToUploadPath))
+        print(f"Reading file {fileToUploadPath}")
     ripmeUpdate = open(fileToUploadPath, mode='rb').read()
 
     # The actual hash of the file on disk
@@ -91,17 +93,17 @@ if not args.skip_hash_check:
     # cause ripme to refuse to install the update for all users who haven't disabled update hash checking
     if expectedHash != actualHash:
         print("[!] Error: expected hash of file and actual hash differ")
-        print("[!] Expected hash is {}".format(expectedHash))
-        print("[!] Actual hash is {}".format(actualHash))
+        print(f"[!] Expected hash is {expectedHash}")
+        print(f"[!] Actual hash is {actualHash}")
         sys.exit(1)
 else:
     print("[*] WARNING: SKIPPING HASH CHECK")
 # Ask the user to review the information before we precede
 # This only runs in we're in interactive mode
 if not InNoninteractiveMode:
-    print("File path: {}".format(fileToUploadPath))
-    print("Release title: {}".format(commitMessage))
-    print("Repo: {}/{}".format(repoOwner, repoName))
+    print(f"File path: {fileToUploadPath}")
+    print(f"Release title: {commitMessage}")
+    print(f"Repo: {repoOwner}/{repoName}")
     input("\nPlease review the information above and ensure it is correct and then press enter")
 
 if not args.test:
