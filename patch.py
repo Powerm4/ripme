@@ -39,7 +39,7 @@ def update_change_list(message):
 
 currentVersion = get_ripme_json()["latestVersion"]
 
-print('Current version ' + currentVersion)
+print(f'Current version {currentVersion}')
 
 versionFields = currentVersion.split('.')
 patchCur = int(versionFields[2])
@@ -48,23 +48,31 @@ majorMinor = versionFields[:2]
 majorMinor.append(str(patchNext))
 nextVersion = '.'.join(majorMinor)
 
-print('Updating to ' + nextVersion)
+print(f'Updating to {nextVersion}')
 
-substrExpr = 's/' + currentVersion + '/' + nextVersion + '/'
+substrExpr = f's/{currentVersion}/{nextVersion}/'
 subprocess.call(['sed', '-i', '-e', substrExpr, 'src/main/java/com/rarchives/ripme/ui/UpdateUtils.java'])
-subprocess.call(['git', 'grep', 'DEFAULT_VERSION.*' + nextVersion,
-                 'src/main/java/com/rarchives/ripme/ui/UpdateUtils.java'])
+subprocess.call(
+    [
+        'git',
+        'grep',
+        f'DEFAULT_VERSION.*{nextVersion}',
+        'src/main/java/com/rarchives/ripme/ui/UpdateUtils.java',
+    ]
+)
 
 substrExpr = 's/\\\"latestVersion\\\": \\\"' + currentVersion + '\\\"/\\\"latestVersion\\\": \\\"' + \
              nextVersion + '\\\"/'
 subprocess.call(['sed', '-i', '-e', substrExpr, 'ripme.json'])
 subprocess.call(['git', 'grep', 'latestVersion', 'ripme.json'])
 
-substrExpr = 's/<version>' + currentVersion + '/<version>' + nextVersion + '/'
+substrExpr = f's/<version>{currentVersion}/<version>{nextVersion}/'
 subprocess.call(['sed', '-i', '-e', substrExpr, 'pom.xml'])
-subprocess.call(['git', 'grep', '<version>' + nextVersion + '</version>', 'pom.xml'])
+subprocess.call(
+    ['git', 'grep', f'<version>{nextVersion}</version>', 'pom.xml']
+)
 
-commitMessage = nextVersion + ': ' + message
+commitMessage = f'{nextVersion}: {message}'
 
 update_change_list(commitMessage)
 
@@ -74,10 +82,12 @@ subprocess.call(["mvn", "clean", "compile", "assembly:single"])
 print("Stripping jar")
 subprocess.call(["mvn", "io.github.zlika:reproducible-build-maven-plugin:0.6:strip-jar"])
 print("Hashing .jar file")
-openedFile = open("./target/ripme-{}-jar-with-dependencies.jar".format(nextVersion), "rb")
+openedFile = open(
+    f"./target/ripme-{nextVersion}-jar-with-dependencies.jar", "rb"
+)
 readFile = openedFile.read()
 file_hash = sha256(readFile).hexdigest()
-print("Hash is: {}".format(file_hash))
+print(f"Hash is: {file_hash}")
 print("Updating hash")
 update_hash(file_hash)
 subprocess.call(['git', 'add', '-u'])
